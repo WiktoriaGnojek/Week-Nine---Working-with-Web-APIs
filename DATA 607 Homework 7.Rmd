@@ -1,0 +1,73 @@
+---
+title: "Assignment – Web APIs"
+author: "Wiktoria Gnojek"
+date: "10/24/2021"
+output:
+  html_document: default
+  pdf_document: default
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+The New York Times web site provides a rich set of APIs, as described here: https://developer.nytimes.com/apis. 
+
+You’ll need to start by signing up for an API key. Your task is to choose one of the New York Times APIs, construct an interface in R to read in the JSON data, and transform it into an R DataFrame.
+
+**Installing the Library(s)**
+```{r}
+library(jsonlite)
+library(httr)
+```
+**API Key Created**
+```{r}
+key <- "Lm652PALZ1UL10AmoCcyDVtxI6DrXiZa"
+```
+**New York Times API**
+
+Movie Reviews API
+
+I will be using the New York Times Movie Reviews API, url to overview page; https://developer.nytimes.com/docs/movie-reviews-api/1/overview
+
+Overview:
+
+Search New York Times movie reviews by keyword and opening date and filter by Critics' Picks.
+
+**Loading the Data**
+
+Important to note, I chose a type of picks, offset of 20, and order by; opening date. 
+
+URL to this portion; https://developer.nytimes.com/docs/movie-reviews-api/1/routes/reviews/%7Btype%7D.json/get
+```{r}
+url <- paste0("https://api.nytimes.com/svc/movies/v2/reviews/picks.json?offset=20&order=by-opening-date&api-key=",key)
+movie_reviews <- GET(url)
+# checking status
+movie_reviews$status_code
+```
+**Json Data**
+```{r}
+json_data <- fromJSON(url)
+```
+**Converting to Data Frame**
+
+Below you will see two chunks of code. The first one is loading the chosen data with a regular data frame function. This data isn't yet organized, but is checking of the portion of the assignment. 
+
+Next, you will see the same data but with a few transformation functions as well as listed in a cleaner data table format. i also looked at frequency per byline. 
+```{r}
+json_data <- json_data$results
+as.data.frame(json_data)
+```
+**Data Frame Transformations**
+```{r}
+library(plyr)
+library(dplyr)
+library(tidyr)
+library(DT)
+json_data %>%
+  select(
+display_title, mpaa_rating, critics_pick, byline, headline, summary_short) %>%
+  arrange(desc(byline)) %>%
+  datatable()
+## Frequency by byline
+table(json_data$byline)
+```
+
